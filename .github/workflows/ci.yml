@@ -1,29 +1,51 @@
-name: Run Jest Tests
+name: CI/CD Pipeline
 
 on:
   push:
     branches:
       - main
 
-jobs:
-  test:
-    runs-on: ubuntu-latest
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    name: Continuous Integration
+    runs-on: ubuntu-latest
     steps:
-      # Step 1: Check out the repository code
-      - name: Checkout repository
+      - name: Checkout source code
         uses: actions/checkout@v4
 
-      # Step 2: Set up Node.js
-      - name: Set up Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: 22
 
-      # Step 3: Install Jest directly without package.json
-      - name: Install Jest
-        run: npm install jest
+      - name: Install project dependencies
+        run: npm install
 
-      # Step 4: Run Jest tests directly using npx
-      - name: Run tests
-        run: npx jest
+      - name: Run Unit Tests
+        run: npm test
+
+      - name: Upload Website Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+  cd:
+    name: Continuous Delivery
+    needs: ci
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
