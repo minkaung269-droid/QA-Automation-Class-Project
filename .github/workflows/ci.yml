@@ -1,0 +1,29 @@
+name: Run Jest Tests
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Check out the repository code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Step 2: Set up Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # Step 3: Install Jest directly without package.json
+      - name: Install Jest
+        run: npm install jest
+
+      # Step 4: Run Jest tests directly using npx
+      - name: Run tests
+        run: npx jest
